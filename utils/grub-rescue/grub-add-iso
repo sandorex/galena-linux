@@ -2,7 +2,7 @@
 #
 # grub-add-iso - add bootable iso file as menuentry in grub
 #
-# requires 7zip/p7zip whiptail lblk
+# requires 7z/7zz lsblk
 
 KERNEL_ARGS=
 POSITIONAL_ARGS=()
@@ -13,16 +13,16 @@ while [ $# -gt 0 ]; do
             ARG_LABEL=$2
             shift 2
             ;;
-        --rootpath)
+        --partpath) # TODO update to partpath
             ARG_ROOTPATH=$2
             shift 2
             ;;
-        --UUID)
+        --partuuid)
             ISO_PARTITION_UUID=$2
             shift 2
             ;;
-        --no-default-kargs)
-            NO_DEFAULT_KARGS=1
+        --show)
+            SHOW=1
             shift
             ;;
         --)
@@ -49,8 +49,52 @@ done
 # restore positional parameters
 set -- "${POSITIONAL_ARGS[@]}"
 
-if [ -z "$1" ] || [ -n "$HELP" ]; then
-    echo "TODO"
+7zip() {
+    # support both official 7zip and the old deprecated p7zip
+    if command -v 7zz; then
+        7zz "$@"
+    else
+        7z "$@"
+    fi
+}
+
+if [ -n "$1" ] && [ -n "$SHOW" ]; then
+    TMPDIR=$(mktemp -d)
+    grub_files=$(7zip l "$1" | grep grub.cfg | awk '{ print $6 }' | xargs)
+    # shellcheck disable=SC2086
+    7zip x "-o$TMPDIR" "$1" $grub_files >/dev/null
+    # shellcheck disable=SC2086
+    for i in $grub_files; do
+        echo -e "\n$(tput setaf 4)$i:$(tput sgr0)"
+        cat "$TMPDIR/$i"
+    done
+    exit
+fi
+
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -n "$HELP" ]; then
+    cat <<EOF
+Usage: $0 [<args...>] <iso file path> <linux path> <initrd path>
+
+Arguments:
+    --label <label>         label used for grub menuentry, defaults to ISO file
+                            name
+    --partpath <path>       path to ISO file used by grub if the file is on
+                            another partition (separate boot partition for ex.)
+    --partuuid <uuid>       Explicitly set UUID of partition where the ISO file
+                            is stored, otherwise detected automatically using
+                            lsblk
+    --show                  Extracts all grub.cfg files from ISO, use this to
+                            to get paths and kernel arguments for actual usage.
+                            Only iso file path is required with this argument!
+    --                      Stops parsing arguments and everything afterwards
+                            is used as kernel arguments when booting
+
+How to use:
+    Run '$ $0 --show <iso file>' to get all menu entries and then extract which
+    ones you want and then add them like for example
+        $ $0 --label 'LiveCD Rescue' --partpath grub/iso/livecd.iso /boot/grub/iso/livecd.iso /live/vmlinuz-5.10.0-20-amd64 /live/initrd.img-5.10.0-20-amd64 -- boot=live components splash quiet
+
+EOF
     exit
 fi
 
@@ -61,23 +105,10 @@ fi
 
 ISO_PATH=${1:?}
 ISO_FILENAME=$(basename "$ISO_PATH")
+LINUX=${2:?}
+INITRD=${3:?}
 LABEL=${ARG_LABEL:-$ISO_FILENAME}
 ROOTPATH=${ARG_ROOTPATH:-$ISO_PATH}
-
-list-iso() {
-    # support both official 7zip and the old deprecated p7zip
-    if command -v 7zz; then
-        7zz l "$1"
-    else
-        7z l "$1"
-    fi
-}
-
-menu() {
-    title=$1
-    shift 1
-    whiptail --backtitle "GRUB Rescue ISO Install" --title "$title" --noitem --menu "" 0 0 0 "$@" 3>&1 1>&2 2>&3
-}
 
 if [ ! -f "$ISO_PATH" ]; then
     echo "File does not exist at path '$ISO_PATH'"
@@ -89,51 +120,24 @@ if [ -z "$ISO_PARTITION_UUID" ]; then
     echo "== $iso_dev_device"
     ISO_PARTITION_UUID=$(lsblk -o UUID "$iso_dev_device" | tail -n1)
     if [ -z "$ISO_PARTITION_UUID" ]; then
-        echo "Could not get UUID of the partition, you can try providing it manually using --UUID <uuid>"
+        echo "Could not get UUID of the partition, you can try providing it manually using --partuuid <uuid>"
         exit 1
     fi
 fi
 
-files=$(list-iso "$ISO_PATH" | awk 'index($6, "/") { print $6 }')
-
-# im printing '_' as item for whiptail, seemed the simplest solution
-linux=$(echo "$files" | awk '/linu[xz][^/]*$/ { print $0, "_" }')
-initrd=$(echo "$files" | awk '/initrd[^/]*$/ { print $0, "_" }')
-
-# shellcheck disable=SC2086
-if ! LINUX_PATH=$(menu 'Select kernel file' $linux); then
-    echo 'Script aborted'
-    exit 1
-fi
-
-# shellcheck disable=SC2086
-if ! INITRD_PATH=$(menu 'Select initrd file' $initrd); then
-    echo 'Script aborted'
-    exit 1
-fi
-
-# allow disabling kernel_args
-if [ -z "$NO_DEFAULT_KARGS" ]; then
-    KERNEL_ARGS="findiso=\$iso_path boot=live components quiet splash $KERNEL_ARGS"
-fi
-
-# TODO make a menu like here https://wiki.debian.org/DebianLive/MultibootISO
+# recommended to be added with '25_' prefix to be below default option but above other operating systems
 cat <<EOF
 #!/bin/sh
-echo "Added '$ISO_FILENAME' as '$LABEL' to menu"
+echo "Added '$LABEL' (grub-add-iso)"
 exec tail -n +4 \$0
-
-# this file was automatically generated on $(date)
-# file $ISO_PATH
-# partition uuid $ISO_PARTITION_UUID
 
 menuentry "$LABEL" {
   insmod ext2
   set iso_path="$ROOTPATH"
   search --no-floppy --fs-uuid --set=root $ISO_PARTITION_UUID
   loopback loop (\$root)\$isofile
-  linux (loop)/$LINUX_PATH $KERNEL_ARGS
-  initrd (loop)/$INITRD_PATH
+  linux (loop)$LINUX findiso=\$iso_path $KERNEL_ARGS
+  initrd (loop)$INITRD
 }
 EOF
 
