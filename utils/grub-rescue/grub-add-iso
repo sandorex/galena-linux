@@ -131,7 +131,7 @@ menuentry "$LABEL" {
   insmod ext2
   set iso_path="$ROOTPATH"
   search --no-floppy --fs-uuid --set=root $ISO_PARTITION_UUID
-  loopback loop (\$root)\$isofile
+  loopback loop (\$root)\$iso_path
   linux (loop)$LINUX findiso=\$iso_path $KERNEL_ARGS
   initrd (loop)$INITRD
 }
