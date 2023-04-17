@@ -61,9 +61,7 @@ set -- "${POSITIONAL_ARGS[@]}"
 if [ -n "$1" ] && [ -n "$SHOW" ]; then
     TMPDIR=$(mktemp -d)
     grub_files=$(7zip l "$1" | grep grub.cfg | awk '{ print $6 }' | xargs)
-    # shellcheck disable=SC2086
     7zip x "-o$TMPDIR" "$1" $grub_files >/dev/null
-    # shellcheck disable=SC2086
     for i in $grub_files; do
         echo -e "\n$(tput setaf 4)$i:$(tput sgr0)"
         cat "$TMPDIR/$i"
@@ -117,7 +115,6 @@ fi
 
 if [ -z "$ISO_PARTITION_UUID" ]; then
     iso_dev_device=$(df "$ISO_PATH" | tail -n1 | awk '{ print $1 }')
-    echo "== $iso_dev_device"
     ISO_PARTITION_UUID=$(lsblk -o UUID "$iso_dev_device" | tail -n1)
     if [ -z "$ISO_PARTITION_UUID" ]; then
         echo "Could not get UUID of the partition, you can try providing it manually using --partuuid <uuid>"
