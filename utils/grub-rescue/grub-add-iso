@@ -125,7 +125,6 @@ fi
 # recommended to be added with '25_' prefix to be below default option but above other operating systems
 cat <<EOF
 #!/bin/sh
-echo "Added '$LABEL' (grub-add-iso)"
 exec tail -n +4 \$0
 
 menuentry "$LABEL" {
