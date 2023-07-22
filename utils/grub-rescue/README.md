@@ -1,8 +1,8 @@
 # grub-rescue
-Utility to add a bootable ISO file to grub as rescue
+How to add ISO file as a rescue to grub, as done in Galena Linux
 
-Made to provide an easy way to restore the system using timeshift without burning another bootable medium
-
-## It works but..
-Grub supports booting ISO files for some time but it wont show any of the grub config
+- Install `grub-imageboot`
+- Create directory `/boot/images`
+- Copy ISO image to `/boot/images`
+- Update grub with `update-grub2`
 
