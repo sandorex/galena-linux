@@ -17,19 +17,15 @@ container:
 #
 # runs command in the container and then deletes the container
 _run +cmd: container
-    podman run -it --rm --privileged -v .:/data:ro,z -v ./live:/live:exec,dev,z -w /live "{{IMAGE}}" {{cmd}}
+    sudo podman run --rm -it --privileged -v ./live:/live:exec,dev,z -w /live "{{IMAGE}}" {{cmd}}
 
 # configures live-build, must be ran before build
-configure: (_run "/data/configure.sh")
+configure: (_run "lb" "config")
 # configure: (_run "bash" "-c" "'mkdir -p /live; cd /live; /data/configure.sh; ls -al /live; lb build'")
 
 # builds the iso
 build: (_run "lb" "build")
 
 # cleans up live-build, leaving configuration behind, recommended before build
-clean: (_run "lb" "clean")
-
-# running inside the container as it cannot be done without root otherwise
-# fully cleans up everything
-deepclean: (_run "rm" "-rf" "/live/*")
+clean: (_run "lb" "clean" "--all")
 
