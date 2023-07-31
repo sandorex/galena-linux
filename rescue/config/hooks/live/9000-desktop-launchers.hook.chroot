@@ -8,10 +8,9 @@ launchers=(
 )
 
 mkdir -p /etc/skel/Desktop
-for launcher in ${launchers[*]}; do
+for launcher in "${launchers[@]}"; do
 	cp -f "$launcher" /etc/skel/Desktop/
 done
 
-# xfce4 warns if the desktop file is not executable
 chmod +x /etc/skel/Desktop/*.desktop
 

@@ -39,6 +39,7 @@ lb config noauto \
     --net-tarball false \
     --source false \
     --clean \
+    --color \
     --cache-indices true \
     "$@"
 
