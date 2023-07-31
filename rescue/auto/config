@@ -1,4 +1,9 @@
-#!/usr/bin/env bash
+#!/bin/sh
+#
+# https://github.com/sandorex/galena-linux
+# galena linux live-build config
+#
+# to use just run `lb config && lb build`
 
 set -e
 
@@ -7,7 +12,7 @@ ISO_LABEL="Galena Rescue $(date +'%d%m%yT%H%M')"
 ISO_PUBLISHER='galena-linux'
 ISO_VOLUME="Galena Rescue"
 
-if [[ "${#ISO_VOLUME}" -gt 16 ]]; then
+if [ "${#ISO_VOLUME}" -gt 16 ]; then
     echo "Invalid ISO volume, longer than 16 characters"
     exit 1
 fi
@@ -34,5 +39,6 @@ lb config noauto \
     --net-tarball false \
     --source false \
     --clean \
+    --cache-indices true \
     "$@"
 

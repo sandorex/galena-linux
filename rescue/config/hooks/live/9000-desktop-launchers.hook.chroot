@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 # sets up desktop shortcuts
 
-# links have ugly icons on the links in xfce4 cause they are owned by root so copying
-cp -f "/usr/share/applications/timeshift-gtk.desktop" "$HOME/Desktop/Timeshift.desktop"
-cp -f "/usr/share/applications/gparted.desktop" "$HOME/Desktop/GParted.desktop"
-cp -f "/usr/share/applications/xfce4-terminal-emulator.desktop" "$HOME/Desktop/Termina.desktop"
+launchers=(
+	/usr/share/applications/timeshift-gtk.desktop
+	/usr/share/applications/gparted.desktop
+	/usr/share/applications/xfce4-terminal-emulator.desktop
+)
+
+mkdir -p /etc/skel/Desktop
+for launcher in ${launchers[*]}; do
+	cp -f "$launcher" /etc/skel/Desktop/
+done
+
+# xfce4 warns if the desktop file is not executable
+chmod +x /etc/skel/Desktop/*.desktop
 
