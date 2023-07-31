@@ -2,24 +2,30 @@ set fallback
 
 IMAGE := "localhost/live-build"
 
+# allows adding args to podman from commandline
+PODMAN_ARGS := env_var_or_default("LIVE_BUILD_PODMAN_ARGS", "")
+
 _default:
-    @just --choose
+    @just --list
 
 # builds the minimal debian container with live-build
-container:
+_container:
     @podman image exists localhost/live-build:latest \
         || podman build {{justfile_directory()}}/.. -t "{{IMAGE}}"
 
 # runs command in the container and then deletes the container
-_run +cmd: container
-    sudo podman run --rm -it --privileged -v ./live:/live:exec,dev,z -w /live "{{IMAGE}}" {{cmd}}
+_run +cmd: _container
+    sudo podman run --rm -it --privileged -v .:/build:exec,dev,z -w /build {{PODMAN_ARGS}} "{{IMAGE}}" {{cmd}}
 
-# configures live-build, must be ran before build
+# configures live-build
 configure: (_run "lb" "config")
 
 # builds the iso
 build: (_run "lb" "build")
 
 # cleans up live-build, leaving configuration behind
-clean: (_run "lb" "clean" "--all")
+clean: (_run "lb" "clean")
+
+# does a full build by running clean configure then build
+iso: clean configure build
 

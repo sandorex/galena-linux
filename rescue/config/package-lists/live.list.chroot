@@ -3,3 +3,4 @@ live-config
 live-config-systemd
 systemd-sysv
 firefox-esr
+network-manager
