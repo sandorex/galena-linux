@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# sets up desktop shortcuts
+
+# links have ugly icons on the links in xfce4 cause they are owned by root so copying
+cp -f "/usr/share/applications/timeshift-gtk.desktop" "$HOME/Desktop/Timeshift.desktop"
+cp -f "/usr/share/applications/gparted.desktop" "$HOME/Desktop/GParted.desktop"
+cp -f "/usr/share/applications/xfce4-terminal-emulator.desktop" "$HOME/Desktop/Termina.desktop"
+

@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -e
+
+RELEASE=bookworm
+ISO_LABEL="Galena Rescue $(date +'%d%m%yT%H%M')"
+ISO_PUBLISHER='galena-linux'
+ISO_VOLUME="Galena Rescue"
+
+if [[ "${#ISO_VOLUME}" -gt 16 ]]; then
+    echo "Invalid ISO volume, longer than 16 characters"
+    exit 1
+fi
+
+lb config noauto \
+    --system live \
+    --distribution "$RELEASE" \
+    --architectures amd64 \
+    --archive-areas "main,contrib,non-free,non-free-firmware" \
+    --updates true \
+    --security true \
+    --backports true \
+    --binary-images iso-hybrid \
+    --binary-filesystem ext4 \
+    --iso-application "$ISO_LABEL" \
+    --iso-volume "$ISO_VOLUME" \
+    --iso-publisher "$ISO_PUBLISHER" \
+    --bootappend-live "boot=live components config" \
+    --memtest memtest86+ \
+    --win32-loader true \
+    --debootstrap-options "--include=apt-transport-https,ca-certificates,openssl" \
+    --apt-indices false \
+    --zsync false \
+    --net-tarball false \
+    --source false \
+    --clean \
+    "$@"
+

@@ -10,22 +10,16 @@ container:
     @podman image exists localhost/live-build:latest \
         || podman build {{justfile_directory()}}/.. -t "{{IMAGE}}"
 
-# mounts current directory as /data but ro, while the build dir is
-# writable and mounted at /live
-#
-# working directory is set to /live
-#
 # runs command in the container and then deletes the container
 _run +cmd: container
     sudo podman run --rm -it --privileged -v ./live:/live:exec,dev,z -w /live "{{IMAGE}}" {{cmd}}
 
 # configures live-build, must be ran before build
 configure: (_run "lb" "config")
-# configure: (_run "bash" "-c" "'mkdir -p /live; cd /live; /data/configure.sh; ls -al /live; lb build'")
 
 # builds the iso
 build: (_run "lb" "build")
 
-# cleans up live-build, leaving configuration behind, recommended before build
+# cleans up live-build, leaving configuration behind
 clean: (_run "lb" "clean" "--all")
 
