@@ -1,16 +1,16 @@
 #!/bin/sh
 #
 # https://github.com/sandorex/galena-linux
-# galena linux rescue live-build config
+# galena linux installer live-build config
 
 set -e
 
 # source common things
-. ./common.sh
+. ../common/config.sh
 
-ISO_LABEL="Galena Rescue $VERSION $TIMESTAMP"
-ISO_VOLUME="Galena Rescue"
-ISO_IMAGE_NAME="${IMAGE_NAME_PREFIX}-rescue-${IMAGE_NAME_SUFFIX}"
+ISO_LABEL="Galena Installer $VERSION $TIMESTAMP"
+ISO_VOLUME="Galena Linux"
+ISO_IMAGE_NAME="${IMAGE_NAME_PREFIX}-installer-${IMAGE_NAME_SUFFIX}"
 
 if [ "${#ISO_VOLUME}" -gt 16 ]; then
     echo "Invalid ISO volume, longer than 16 characters"
@@ -27,6 +27,7 @@ lb config noauto \
     --architectures amd64 \
     --archive-areas "main,contrib,non-free,non-free-firmware" \
     --apt-source-archives false \
+    --apt-options "--yes -o 'Acquire::ForceIPv4=true'" \
     --updates true \
     --security true \
     --backports true \
@@ -35,6 +36,9 @@ lb config noauto \
     --iso-application "$ISO_LABEL" \
     --iso-volume "$ISO_VOLUME" \
     --iso-publisher "$ISO_PUBLISHER" \
+    --debian-installer live \
+    --debian-installer-distribution "$RELEASE" \
+    --debian-installer-gui true \
     --bootappend-live "boot=live components config" \
     --memtest memtest86+ \
     --debootstrap-options "--include=apt-transport-https,ca-certificates,openssl" \

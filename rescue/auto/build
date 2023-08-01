@@ -2,4 +2,11 @@
 
 set -e
 
-lb build noauto "${@}" 2>&1 | tee build.log
+lb build noauto --color "${@}" 2>&1 | tee build.log
+
+# create checksum
+printf '' > sha256sum.txt
+for file in ./*.iso; do
+    sha256sum "$file" >> sha256sum.txt
+done
+
