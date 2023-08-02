@@ -5,48 +5,20 @@
 
 set -e
 
-# source common things
-. ../common/config.sh
+# source globals
+. ../common/common.sh
 
-ISO_LABEL="Galena Installer $VERSION $TIMESTAMP"
-ISO_VOLUME="Galena Linux"
-ISO_IMAGE_NAME="${IMAGE_NAME_PREFIX}-installer-${IMAGE_NAME_SUFFIX}"
+export ISO_LABEL="Galena Installer $VERSION $TIMESTAMP"
+export ISO_IMAGE_NAME="galena-installer-$VERSION"
 
-if [ "${#ISO_VOLUME}" -gt 16 ]; then
-    echo "Invalid ISO volume, longer than 16 characters"
-    exit 1
-fi
+# set the title in grub
+export GRUB_TITLE="$ISO_LABEL ($RELEASE)"
 
-# copy the common files with force overwrite
-cp -fr ../common/config ./
-
-lb config noauto \
-    --system live \
-    --image-name "$ISO_IMAGE_NAME" \
-    --distribution "$RELEASE" \
-    --architectures amd64 \
-    --archive-areas "main,contrib,non-free,non-free-firmware" \
-    --apt-source-archives false \
+# the script that has all the common functionality
+# ipv6 for some reason breaks downloads for installer stuff
+../common/config.sh \
     --apt-options "--yes -o 'Acquire::ForceIPv4=true'" \
-    --updates true \
-    --security true \
-    --backports true \
-    --binary-images iso-hybrid \
-    --binary-filesystem ext4 \
-    --iso-application "$ISO_LABEL" \
-    --iso-volume "$ISO_VOLUME" \
-    --iso-publisher "$ISO_PUBLISHER" \
     --debian-installer live \
     --debian-installer-distribution "$RELEASE" \
     --debian-installer-gui true \
-    --bootappend-live "boot=live components config" \
-    --memtest memtest86+ \
-    --debootstrap-options "--include=apt-transport-https,ca-certificates,openssl" \
-    --apt-indices false \
-    --cache-indices true \
-    --zsync false \
-    --net-tarball false \
-    --clean \
-    --color \
     "$@"
-
