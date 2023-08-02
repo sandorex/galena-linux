@@ -14,6 +14,8 @@ cp -fr ../common/config ./
 # dynamic grub title
 sed -i "s/@@GRUB_TITLE@@/$GRUB_TITLE/g" ./config/bootloaders/grub-pc/live-theme/theme.txt
 
+# TODO option to make it free-ish remove contrib and non-free but keep firmware
+
 lb config noauto \
     --system live \
     --distribution "$RELEASE" \
@@ -33,6 +35,7 @@ lb config noauto \
     --bootloaders "grub-pc,grub-efi" \
     --memtest memtest86+ \
     --debootstrap-options "--include=apt-transport-https,ca-certificates,openssl" \
+    --apt-options "--yes -o 'Acquire::ForceIPv4=true'" \
     --apt-indices false \
     --cache-indices true \
     --zsync false \

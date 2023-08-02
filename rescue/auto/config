@@ -10,8 +10,6 @@ set -e
 
 export ISO_LABEL="Galena Rescue $VERSION $TIMESTAMP"
 export ISO_IMAGE_NAME="galena-rescue-$VERSION"
-
-# set the title in grub
 export GRUB_TITLE="$ISO_LABEL ($RELEASE)"
 
 # the script that has all the common functionality

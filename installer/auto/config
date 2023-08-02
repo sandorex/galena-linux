@@ -10,14 +10,11 @@ set -e
 
 export ISO_LABEL="Galena Installer $VERSION $TIMESTAMP"
 export ISO_IMAGE_NAME="galena-installer-$VERSION"
-
-# set the title in grub
 export GRUB_TITLE="$ISO_LABEL ($RELEASE)"
 
 # the script that has all the common functionality
 # ipv6 for some reason breaks downloads for installer stuff
 ../common/config.sh \
-    --apt-options "--yes -o 'Acquire::ForceIPv4=true'" \
     --debian-installer live \
     --debian-installer-distribution "$RELEASE" \
     --debian-installer-gui true \
