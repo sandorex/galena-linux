@@ -41,7 +41,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: installer-build-log
-          path: **/build.log
+          path: */build.log
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -78,7 +78,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: rescue-build-log
-          path: **/build.log
+          path: */build.log
 
       - name: Release
         uses: softprops/action-gh-release@v1
