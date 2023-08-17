@@ -5,18 +5,24 @@ on:
     branches:
       - master
 
+    paths-ignore:
+      - "*.md"
+      - "docs/**"
+
+  schedule:
+    # run on sunday at 8:00 UTC every week
+    - cron: "0 8 * * 0"
+
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-# running docker did not quite work so i am just running a new debian container
-# and installing the live-build, fix this and use just for ci builds too
 
 jobs:
-  build-installer:
+  build-iso:
     runs-on: ubuntu-22.04
 
+    # TODO fix this
+    # i could not use the Containerfile directly for some reason, i am using
+    # bare debian container
     container:
       image: debian:latest
       volumes:
@@ -38,54 +44,32 @@ jobs:
 
           lb clean && lb config && lb build
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: installer-build-log
-          path: |
-            */build.log
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: Development Build
-          fail_on_unmatched_files: yes
-          files: |
-            *.iso
-
-  build-rescue:
-    runs-on: ubuntu-22.04
-
-    container:
-      image: debian:latest
-      volumes:
-        - /proc:/proc
-      options: --privileged
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install live-build
-        run: |
-          apt update
-          apt-get -y install live-build
-
-      - name: Build Rescue ISO
+      - name: Build Installer ISO
         run: |
           cd rescue
 
           lb clean && lb config && lb build
 
       - uses: actions/upload-artifact@v3
+        if: always()
         with:
-          name: rescue-build-log
+          name: installer-build-log
           path: |
             */build.log
+
+      # add together checkums from both rescue and installer
+      - name: Create Checksum
+        run: |
+          cat */sha256sum.txt > sha256sum.txt
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           name: Development Build
+          tag_name: DEV
+          prerelease: yes
           fail_on_unmatched_files: yes
           files: |
             *.iso
+            sha256sum.txt
+

@@ -16,4 +16,3 @@ rescue *args: _container_image
 # build the installer iso
 installer *args: _container_image
     sudo podman run -w /build/installer {{PODMAN_ARGS}} sh -c 'lb clean && lb config {{args}} && lb build'
-

@@ -1,6 +1,1 @@
-#!/bin/sh
-
-lb clean noauto "${@}"
-
-rm -f config/binary config/bootstrap config/chroot config/common config/source build.log
-
+../../common/clean
