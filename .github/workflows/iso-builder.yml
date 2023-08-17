@@ -14,7 +14,7 @@ on:
     - cron: "0 8 * * 0"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-iso:
@@ -44,7 +44,7 @@ jobs:
 
           lb clean && lb config && lb build
 
-      - name: Build Installer ISO
+      - name: Build Rescue ISO
         run: |
           cd rescue
 
@@ -70,6 +70,6 @@ jobs:
           prerelease: yes
           fail_on_unmatched_files: yes
           files: |
-            *.iso
+            */*.iso
             sha256sum.txt
 
