@@ -3,7 +3,7 @@ name: iso-builder
 on:
   push:
     branches:
-      - master
+      - "bookworm/12"
 
     paths-ignore:
       - "*.md"
@@ -17,7 +17,7 @@ permissions:
   contents: write
 
 jobs:
-  build-iso:
+  build-bookworm:
     runs-on: ubuntu-22.04
 
     # TODO fix this
@@ -58,9 +58,10 @@ jobs:
             */build.log
 
       # add together checkums from both rescue and installer
+      # added prefix to checksum so it doesnt clash with other future releases
       - name: Create Checksum
         run: |
-          cat */sha256sum.txt > sha256sum.txt
+          cat */sha256sum.txt > bookworm12.sha256sum.txt
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -71,5 +72,4 @@ jobs:
           fail_on_unmatched_files: yes
           files: |
             */*.iso
-            sha256sum.txt
-
+            *.sha256sum.txt
