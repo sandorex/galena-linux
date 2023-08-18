@@ -1,5 +1,0 @@
-#!/bin/bash
-# remove any firmware that is probably not gonna be needed on a desktop
-apt-get -y purge firmware-netronome \
-				 raspi-firmware
-
